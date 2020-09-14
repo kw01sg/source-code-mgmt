@@ -16,5 +16,30 @@ RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
+# add group
+RUN groupadd testgroup
+
+# add users
+RUN useradd 'john' -p 'password' -g testgroup
+RUN useradd 'jessica' -p 'password' -g testgroup
+RUN useradd 'josie' -p 'password' -g testgroup
+
+RUN mkdir -p /home/john/.ssh && chmod 700 /home/john/.ssh \
+    && touch /home/john/.ssh/authorized_keys && chmod 600 /home/john/.ssh/authorized_keys \
+    && chown -R john: /home/john
+RUN mkdir -p /home/jessica/.ssh && chmod 700 /home/jessica/.ssh \
+    && touch /home/jessica/.ssh/authorized_keys && chmod 600 /home/jessica/.ssh/authorized_keys \
+    && chown -R jessica: /home/jessica
+RUN mkdir -p /home/josie/.ssh && chmod 700 /home/josie/.ssh \
+    && touch /home/josie/.ssh/authorized_keys && chmod 600 /home/josie/.ssh/authorized_keys \
+    && chown -R josie: /home/josie
+
+# add dummy ssh files into the respective .ssh/authorized_keys
+COPY .ssh /temp_dir/
+RUN cat /temp_dir/id_john.pub >> /home/john/.ssh/authorized_keys
+RUN cat /temp_dir/id_jessica.pub >> /home/jessica/.ssh/authorized_keys
+RUN cat /temp_dir/id_josie.pub >> /home/josie/.ssh/authorized_keys
+RUN rm -rf /temp_dir
+
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
