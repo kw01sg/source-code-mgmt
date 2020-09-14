@@ -18,14 +18,14 @@ A dockerfile is also provided to run an Ubuntu container that acts as an SSH ser
 
 * Build and run docker image with dockerfile
 
-```bash
+```console
 $ docker build -t eg_sshd .
 $ docker run -d --rm -p 8000:22 --name test_sshd eg_sshd
 ```
 
 * Test that you can ssh in:
 
-```bash
+```console
 $ ssh root@localhost -p 8000
 root@localhost's password:
 $ password
@@ -34,7 +34,7 @@ $ password
 * Get access to ssh server without password
   * Manual method
 
-  ```bash
+  ```console
   # manual method
   $ cd ~
   $ mkdir .ssh && chmod 700 .ssh
@@ -44,7 +44,7 @@ $ password
 
   * Using `ssh-copy-id`. Refer to documentation [here](https://www.ssh.com/ssh/copy-id)
 
-  ```bash
+  ```console
   $ ssh-copy-id -i ~/.ssh/id_rsa.pub root@localhost -p 8000
   /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/kohkb/.ssh/id_rsa.pub"
   /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
@@ -76,7 +76,7 @@ $ password
 1. Modify directory permissions so the created group has read write permission
 1. An empty repository can be setup:
 
-    ```bash
+    ```console
     $ cd /srv/git
     $ mkdir project.git
     $ cd project.git
@@ -86,7 +86,7 @@ $ password
 
 1. Cloning and adding of remote
 
-    ```bash
+    ```console
     $ git remote add origin git@gitserver:/srv/git/project.git
     $ git clone git@gitserver:/srv/git/project.git
     ```
