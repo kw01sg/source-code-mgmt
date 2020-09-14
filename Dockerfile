@@ -20,9 +20,9 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 RUN groupadd testgroup
 
 # add users
-RUN useradd 'john' -p 'password' -g testgroup
-RUN useradd 'jessica' -p 'password' -g testgroup
-RUN useradd 'josie' -p 'password' -g testgroup
+RUN useradd 'john' -p 'password' -G testgroup
+RUN useradd 'jessica' -p 'password' -G testgroup
+RUN useradd 'josie' -p 'password' -G testgroup
 
 RUN mkdir -p /home/john/.ssh && chmod 700 /home/john/.ssh \
     && touch /home/john/.ssh/authorized_keys && chmod 600 /home/john/.ssh/authorized_keys \
