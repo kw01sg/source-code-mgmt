@@ -59,19 +59,17 @@ $ password
 
 1. Set up accounts for everybody, which is straightforward but can be cumbersome.
     * You may not want to run `adduser` (or the possible alternative `useradd`) and have to set temporary passwords for every new user.
-
-2. Create a single git user account on the machine, ask every user who is to have write access to send you an SSH public key, and add that key to the `~/.ssh/authorized_keys` file of that new git account.
+1. Create a single git user account on the machine, ask every user who is to have write access to send you an SSH public key, and add that key to the `~/.ssh/authorized_keys` file of that new git account.
     * At that point, everyone will be able to access that machine via the git account.
     * This doesn’t affect the commit data in any way — the SSH user you connect as doesn’t affect the commits you’ve recorded.
-
-3. Another way to do it is to have your SSH server authenticate from an LDAP server or some other centralized authentication source that you may already have set up.
+1. Another way to do it is to have your SSH server authenticate from an LDAP server or some other centralized authentication source that you may already have set up.
     * As long as each user can get shell access on the machine, any SSH authentication mechanism you can think of should work.
 
 ## Proposed Steps
 
-1. Create user accounts on the server for all members.
-1. Give SSH access to all these accounts by adding public keys to the respective `~/.ssh/authorized_keys` files of the created accounts.
-1. Create a group for all the created user accounts and set this group as primary account.
+1. Create user accounts on the server for all members
+1. Give SSH access to all these accounts by adding public keys to the respective `~/.ssh/authorized_keys` files of the created accounts
+1. Create a group for all the created user accounts and set this group as primary account
 1. Create directory where all your Git repositories will be stored e.g. `/srv/git`
 1. Modify directory permissions so the created group has read write permission
 1. An empty repository can be setup:
@@ -84,7 +82,7 @@ $ password
     Initialized empty Git repository in /srv/git/project.git/
     ```
 
-1. Cloning and adding of remote
+1. Cloning and adding of remote:s
 
     ```console
     $ git remote add origin git@gitserver:/srv/git/project.git
