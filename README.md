@@ -67,24 +67,44 @@ $ password
 
 ## Proposed Steps
 
-1. Create user accounts on the server for all members
+### Pre-requisites
+
+1. Create a group on the server for all the created user accounts
+1. Create user accounts on the server for all members, with primary group as the newly created group
 1. Give SSH access to all these accounts by adding public keys to the respective `~/.ssh/authorized_keys` files of the created accounts
-1. Create a group for all the created user accounts and set this group as primary account
 1. Create directory where all your Git repositories will be stored e.g. `/srv/git`
-1. Modify directory permissions so the created group has read write permission
-1. An empty repository can be setup:
+1. Change group ownership to created group and modify directory permissions so that the created group has read write permission
+
+    ```console
+    $ chgrp <new_group> /srv/git
+    $ chmod 770 /srv/git/
+    ```
+
+### Work flow
+
+1. To setup a new repository, create a `.git` directory in the directory where users have read write access to:
 
     ```console
     $ cd /srv/git
     $ mkdir project.git
+    $ chmod 775 project.git           # set user and group permissions
+    $ chgrp <new_group> project.git   # change group ownership to created group
     $ cd project.git
-    $ git init --bare
-    Initialized empty Git repository in /srv/git/project.git/
+    $ git init --bare --shared
+    Initialized empty shared Git repository in /srv/git/project.git/
     ```
 
-1. Cloning and adding of remote:s
+1. Cloning and adding of remote:
 
     ```console
     $ git remote add origin git@gitserver:/srv/git/project.git
     $ git clone git@gitserver:/srv/git/project.git
+    # Example
+    $ GIT_SSH_COMMAND='ssh -i ./.ssh/id_josie -o IdentitiesOnly=yes' git clone ssh://josie@localhost:8000/srv/git/project.git
+    ```
+
+1. Push to and pull from remote:
+
+    ```console
+    $ GIT_SSH_COMMAND='ssh -i ./.ssh/id_john -o IdentitiesOnly=yes' git push origin master
     ```

@@ -41,5 +41,11 @@ RUN cat /temp_dir/id_jessica.pub >> /home/jessica/.ssh/authorized_keys
 RUN cat /temp_dir/id_josie.pub >> /home/josie/.ssh/authorized_keys
 RUN rm -rf /temp_dir
 
+# Create directory where all your Git repositories will be stored
+RUN mkdir /srv/git
+
+# Change group ownership to created group and modify directory permissions so that the created group has read write permission
+RUN chgrp testgroup /srv/git && chmod 770 /srv/git/
+
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
