@@ -1,6 +1,6 @@
 # Source Code Management on a Remote Server
 
-This readme serves as documentation on how to setup a remote Git or Subversion repostiory on a remote server.
+This readme serves as documentation on how to setup a Git or Subversion repository on a remote server.
 
 A dockerfile is provided to run an Ubuntu container that acts both as an SSH server and also svnserve server for people to run experiments.
 
