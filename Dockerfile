@@ -4,7 +4,8 @@ FROM ubuntu:18.04
 RUN apt-get update && apt-get install -y \
     openssh-server \
     vim \
-    git
+    git \
+    subversion
 
 RUN mkdir /var/run/sshd
 RUN echo 'root:password' | chpasswd
@@ -23,6 +24,7 @@ RUN groupadd testgroup
 RUN useradd 'john' -p 'password' -G testgroup
 RUN useradd 'jessica' -p 'password' -G testgroup
 RUN useradd 'josie' -p 'password' -G testgroup
+RUN useradd 'svnadmin' -p 'password'
 
 RUN mkdir -p /home/john/.ssh && chmod 700 /home/john/.ssh \
     && touch /home/john/.ssh/authorized_keys && chmod 600 /home/john/.ssh/authorized_keys \
@@ -41,11 +43,20 @@ RUN cat /temp_dir/id_jessica.pub >> /home/jessica/.ssh/authorized_keys
 RUN cat /temp_dir/id_josie.pub >> /home/josie/.ssh/authorized_keys
 RUN rm -rf /temp_dir
 
-# Create directory where all your Git repositories will be stored
+# Create directory where all Git/SVN repositories will be stored
 RUN mkdir /srv/git
+RUN mkdir /srv/svn
 
 # Change group ownership to created group and modify directory permissions so that the created group has read write permission
 RUN chgrp testgroup /srv/git && chmod 770 /srv/git/
 
+# Change permission and ownership of SVN directory
+RUN chmod 750 /srv/svn && chown svnadmin:svnadmin /srv/svn
+
 EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+
+# port for svnserve daemon
+EXPOSE 3690
+
+COPY ./start.sh /start.sh
+CMD ["sh", "/start.sh"]
