@@ -21,10 +21,15 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 RUN groupadd testgroup
 
 # add users
-RUN useradd 'john' -p 'password' -G testgroup
-RUN useradd 'jessica' -p 'password' -G testgroup
-RUN useradd 'josie' -p 'password' -G testgroup
-RUN useradd 'svnadmin' -p 'password'
+RUN useradd 'john' --create-home --shell /bin/bash -G testgroup
+RUN useradd 'jessica' --create-home --shell /bin/bash -G testgroup
+RUN useradd 'josie' --create-home --shell /bin/bash -G testgroup
+RUN useradd 'svnadmin' --create-home --shell /bin/bash
+
+RUN echo 'john:password' | chpasswd
+RUN echo 'jessica:password' | chpasswd
+RUN echo 'josie:password' | chpasswd
+RUN echo 'svnadmin:password' | chpasswd
 
 RUN mkdir -p /home/john/.ssh && chmod 700 /home/john/.ssh \
     && touch /home/john/.ssh/authorized_keys && chmod 600 /home/john/.ssh/authorized_keys \

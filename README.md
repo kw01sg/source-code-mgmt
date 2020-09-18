@@ -1,20 +1,10 @@
 # Source Code Management on a Remote Server
 
-## Git
+This readme serves as documentation on how to setup a remote Git or Subversion repostiory on a remote server.
 
-This readme serves as documentation on how to setup a remote Git repository on a server (aka a [Git server](https://www.quora.com/What-is-a-git-server)).
+A dockerfile is provided to run an Ubuntu container that acts both as an SSH server and also svnserve server for people to run experiments.
 
-A dockerfile is also provided to run an Ubuntu container that acts as an SSH server for people to run experiments.
-
-### General Idea
-
-[Reference](https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols)
-
-* Requirements:
-    1. Server with SSH access
-    2. Directory to store all Git repositories where users have read and write access
-
-* It’s important to note that this is literally all you need to do to run a useful Git server to which several people have access — just add SSH-able accounts on a server, and stick a bare repository somewhere that all those users have read and write access to. You’re ready to go — nothing else needed.
+## Setting up and Running Ubuntu Container
 
 ### Setting up Ubuntu container with SSH Access
 
@@ -31,6 +21,9 @@ $
 ```console
 $ ssh root@localhost -p 8000
 root@localhost's password: password
+$ ssh john@localhost -p 8000 -i .ssh/id_john    # ssh with private key
+$ whoami
+john
 ```
 
 * Get access to ssh server without password
@@ -38,20 +31,28 @@ root@localhost's password: password
 
   ```console
   # manual method
-  $ cd ~
+  $ cd ~    # change directory to user's home directory
   $ mkdir .ssh && chmod 700 .ssh
   $ touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys
-  $ # then append public keys to  ~/.ssh/authorized_keys
+  $ # then append public keys to  .ssh/authorized_keys
   ```
 
   * Using `ssh-copy-id`. Refer to documentation [here](https://www.ssh.com/ssh/copy-id)
 
   ```console
-  $ ssh-copy-id -i ~/.ssh/id_rsa.pub root@localhost -p 8000
-  /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/kohkb/.ssh/id_rsa.pub"
+  $ ssh-copy-id -i .ssh/id_john.pub john@localhost -p 8000
+  /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/id_john.pub"
   /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
   /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-  root@localhost's password: password
+  john@localhost's password: password
+
+  Number of key(s) added: 1
+
+  Now try logging into the machine, with:   "ssh -p '8000' 'john@localhost'"
+  and check to make sure that only the key(s) you wanted were added.
+
+  $ ssh john@localhost -p 8000 -i .ssh/id_john
+  $
   ```
 
 ### Giving SSH Access
@@ -65,6 +66,20 @@ root@localhost's password: password
     * This doesn’t affect the commit data in any way — the SSH user you connect as doesn’t affect the commits you’ve recorded.
 1. Another way to do it is to have your SSH server authenticate from an LDAP server or some other centralized authentication source that you may already have set up.
     * As long as each user can get shell access on the machine, any SSH authentication mechanism you can think of should work.
+
+## Git
+
+Section on how to setup a remote Git repository on a server (aka a [Git server](https://www.quora.com/What-is-a-git-server)).
+
+### General Idea
+
+[Reference](https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols)
+
+* Requirements:
+    1. Server with SSH access
+    2. Directory to store all Git repositories where users have read and write access
+
+* It’s important to note that this is literally all you need to do to run a useful Git server to which several people have access — just add SSH-able accounts on a server, and stick a bare repository somewhere that all those users have read and write access to. You’re ready to go — nothing else needed.
 
 ### Proposed Steps
 
@@ -104,6 +119,7 @@ root@localhost's password: password
     $
     $ # Example
     $ GIT_SSH_COMMAND='ssh -i ./.ssh/id_josie -o IdentitiesOnly=yes' git clone ssh://josie@localhost:8000/srv/git/project.git
+    $ git remote add origin ssh://john@localhost:8000/srv/git/project.git
     $
     ```
 
@@ -116,9 +132,7 @@ root@localhost's password: password
 
 ## Subversion
 
-This readme serves as documentation on how to setup a remote SVN repository on a server.
-
-A dockerfile is also provided to run an Ubuntu container that acts as remote server for people to run experiments.
+Section on how to setup a remote SVN repository on a server.
 
 ### General Idea
 
