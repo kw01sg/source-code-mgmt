@@ -11,18 +11,25 @@ A dockerfile is provided to run an Ubuntu container that acts both as an SSH ser
 * Build and run docker image with dockerfile
 
 ```console
-$ docker build -t eg_sshd .
-$ docker run -d --rm -p 8000:22 -p 3690:3690 --name test_sshd eg_sshd
-$
+user@local:~/SCM$ docker build -t eg_sshd .
+user@local:~/SCM$ docker run -d --rm -p 8000:22 -p 3690:3690 --name test_sshd eg_sshd
+user@local:~/SCM$
 ```
 
 * Test that you can ssh in:
 
 ```console
-$ ssh root@localhost -p 8000
+user@local:~/SCM$ ssh root@localhost -p 8000
 root@localhost's password: password
-$ ssh john@localhost -p 8000 -i .ssh/id_john    # ssh with private key
-$ whoami
+root@remoteserver:~$
+
+user@local:~/SCM$ ssh john@localhost -p 8000
+john@localhost's password: password
+john@remoteserver:~$
+
+user@local:~/SCM$ ssh john@localhost -p 8000 -i .ssh/id_john    # ssh with private key
+john@remoteserver:~$
+john@remoteserver:~$ whoami
 john
 ```
 
@@ -30,17 +37,23 @@ john
   * Manual method
 
   ```console
-  # manual method
-  $ cd ~    # change directory to user's home directory
-  $ mkdir .ssh && chmod 700 .ssh
-  $ touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys
-  $ # then append public keys to  .ssh/authorized_keys
+  # adding public key for john in this example
+  # get access to remote server as john
+  user@local:~/SCM$ ssh john@localhost -p 8000
+  john@localhost's password: password
+
+  # append public key manually
+  john@remoteserver:~$ cd ~    # change directory to user's home directory
+  john@remoteserver:~$ mkdir .ssh && chmod 700 .ssh
+  john@remoteserver:~$ touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys
+  john@remoteserver:~$ vim .ssh/authorized_keys
   ```
 
   * Using `ssh-copy-id`. Refer to documentation [here](https://www.ssh.com/ssh/copy-id)
 
   ```console
-  $ ssh-copy-id -i .ssh/id_john.pub john@localhost -p 8000
+  # add ssh public key to access user john in remote server
+  user@local:~/SCM$ ssh-copy-id -i .ssh/id_john.pub john@localhost -p 8000
   /usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/id_john.pub"
   /usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
   /usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
@@ -51,8 +64,8 @@ john
   Now try logging into the machine, with:   "ssh -p '8000' 'john@localhost'"
   and check to make sure that only the key(s) you wanted were added.
 
-  $ ssh john@localhost -p 8000 -i .ssh/id_john
-  $
+  user@local:~/SCM$ ssh john@localhost -p 8000 -i .ssh/id_john
+  john@remoteserver:~$
   ```
 
 ### Giving SSH Access
@@ -92,42 +105,68 @@ Section on how to setup a remote Git repository on a server (aka a [Git server](
 1. Change group ownership to created group and modify directory permissions so that the created group has read write permission
 
     ```console
-    $ chgrp <new_group> /srv/git
-    $ chmod 770 /srv/git/
-    $
+    root@remoteserver:~$ chgrp <new_group> /srv/git
+    root@remoteserver:~$ chmod 770 /srv/git/
+    root@remoteserver:~$
     ```
 
 #### Work flow
 
-1. To setup a new repository, create a `.git` directory in the directory where users have read write access to:
+1. To setup a new repository, create a `.git` directory that users have read write access to:
 
     ```console
-    $ cd /srv/git
-    $ mkdir project.git
-    $ chmod 775 project.git           # set user and group permissions
-    $ chgrp <new_group> project.git   # change group ownership to created group
-    $ cd project.git
-    $ git init --bare --shared
+    john@remoteserver:~$ cd /srv/git
+    john@remoteserver:/srv/git$ mkdir project.git
+    john@remoteserver:/srv/git$ chmod 775 project.git           # set user and group permissions
+    john@remoteserver:/srv/git$ chgrp <new_group> project.git   # change group ownership to created group
+    john@remoteserver:/srv/git$ cd project.git
+    john@remoteserver:/srv/git/project.git$ git init --bare --shared
     Initialized empty shared Git repository in /srv/git/project.git/
     ```
 
 1. Cloning and adding of remote:
 
     ```console
+    # Syntax
     $ git remote add origin git@gitserver:/srv/git/project.git
     $ git clone git@gitserver:/srv/git/project.git
-    $
-    $ # Example
-    $ GIT_SSH_COMMAND='ssh -i ./.ssh/id_josie -o IdentitiesOnly=yes' git clone ssh://josie@localhost:8000/srv/git/project.git
-    $ git remote add origin ssh://john@localhost:8000/srv/git/project.git
-    $
+
+    # Clone
+    user@local:~/SCM$ GIT_SSH_COMMAND='ssh -i ./.ssh/id_josie -o IdentitiesOnly=yes' git clone ssh://josie@localhost:8000/srv/git/project.git
+    Cloning into 'project'...
+    warning: You appear to have cloned an empty repository.
+
+    # Add remote
+    user@local:~/SCM$ mkdir john-project && cd john-project
+    user@local:~/SCM/john-project$ git init
+    Initialized empty Git repository in ~/SCM/john-project/.git/
+    user@local:~/SCM/john-project$ git remote add origin ssh://john@localhost:8000/srv/git/project.git
+    user@local:~/SCM/john-project$ git remote -v
+    origin  ssh://john@localhost:8000/srv/git/project.git (fetch)
+    origin  ssh://john@localhost:8000/srv/git/project.git (push)
+    user@local:~/SCM/john-project$ GIT_SSH_COMMAND='ssh -i ../.ssh/id_john -o IdentitiesOnly=yes' git pull origin master
+    remote: Counting objects: 3, done.
+    remote: Total 3 (delta 0), reused 0 (delta 0)
+    Unpacking objects: 100% (3/3), done.
+    From ssh://localhost:8000/srv/git/project
+    * branch            master     -> FETCH_HEAD
+    * [new branch]      master     -> origin/master
     ```
 
 1. Push to and pull from remote:
 
     ```console
-    $ GIT_SSH_COMMAND='ssh -i ./.ssh/id_john -o IdentitiesOnly=yes' git push origin master
-    $
+    # push
+    user@local:~/SCM/john-project$ git remote -v
+    origin  ssh://john@localhost:8000/srv/git/project.git (fetch)
+    origin  ssh://john@localhost:8000/srv/git/project.git (push)
+    user@local:~/SCM/john-project$ GIT_SSH_COMMAND='ssh -i ../.ssh/id_john -o IdentitiesOnly=yes' git push origin master
+
+    # pull
+    user@local:~/SCM/josie-project$ git remote -v
+    origin  ssh://josie@localhost:8000/srv/git/project.git (fetch)
+    origin  ssh://josie@localhost:8000/srv/git/project.git (push)
+    user@local:~/SCM/josie-project$ GIT_SSH_COMMAND='ssh -i ../.ssh/id_josie -o IdentitiesOnly=yes' git pull origin master
     ```
 
 ## Subversion
@@ -154,24 +193,24 @@ Due to the size of the team, I recommend using svnserve as it is the simplest to
 1. Create single svn user on the server e.g. `svnadmin`
 
     ```console
-    $ useradd 'svnadmin' -p 'password'
-    $
+    root@remoteserver:~$ useradd 'svnadmin' -p 'password'
+    root@remoteserver:~$
     ```
 
 1. Create directory where all your Git repositories will be stored e.g. `/srv/svn`
 1. Change ownership to single svn user and modify directory permissions so that only the single svn has read write permission
 
     ```console
-    $ chmod 750 /srv/svn
-    $ chown svnadmin /srv/svn
-    $
+    root@remoteserver:~$ chmod 750 /srv/svn
+    root@remoteserver:~$ chown svnadmin /srv/svn
+    root@remoteserver:~$
     ```
 
 1. Run the svnserve process as the single svn user
 
     ```console
-    $ su - svnadmin -c "svnserve -d -r /srv/svn"
-    $
+    root@remoteserver:~$ su - svnadmin -c "svnserve -d -r /srv/svn"
+    root@remoteserver:~$
     ```
 
 #### Workflow
@@ -179,10 +218,10 @@ Due to the size of the team, I recommend using svnserve as it is the simplest to
 1. [Creating a repository](http://svnbook.red-bean.com/en/1.8/svn.reposadmin.create.html)
 
     ```console
-    $ whoami
+    svnadmin@remoteserver:~$ whoami
     svnadmin
-    $ svnadmin create /srv/svn/repo
-    $
+    svnadmin@remoteserver:~$ svnadmin create /srv/svn/repo
+    svnadmin@remoteserver:~$
     ```
 
 1. Update the repository's `conf/svnserve.conf` file, which is the [central mechanism for controlling access](http://svnbook.red-bean.com/en/1.8/svn.serverconfig.svnserve.html#svn.serverconfig.svnserve.auth) to the repository
@@ -207,16 +246,17 @@ Due to the size of the team, I recommend using svnserve as it is the simplest to
 1. Checkout repository
 
     ```console
-    $ svn checkout svn://localhost:3690/repo
+    user@local:~/SCM$ svn checkout svn://localhost:3690/repo
     Checked out revision 0
     ```
 
 1. Commit and Update repository:
 
     ```console
-    $ svn add test.txt
+    # Commit
+    user@local:~/SCM/repo$ svn add test.txt
     A         test.txt
-    $ svn commit -m 'add test.txt'
+    user@local:~/SCM/repo$ svn commit -m 'add test.txt'
     Authentication realm: <svn://localhost:3690> repo realm
     Username: jessica
     Password for 'jessica': password
@@ -224,9 +264,10 @@ Due to the size of the team, I recommend using svnserve as it is the simplest to
     Adding         test.txt
     Transmitting file data .done
     Committing transaction...
-    Committed revision 2.
-    $
-    $ svn update
+    Committed revision 1.
+
+    # Update
+    user@local:~/SCM/repo$ svn update
     Updating '.':
-    At revision 2.
+    At revision 1.
     ```
