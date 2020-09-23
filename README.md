@@ -16,6 +16,13 @@ user@local:~/SCM$ docker run -d --rm -p 8000:22 -p 3690:3690 --name test_sshd eg
 user@local:~/SCM$
 ```
 
+* [Private SSH keys should be readable by the user but not accessible by others (read/write/execute). SSH will ignore a private key file if it is accessible by others.](https://stackoverflow.com/questions/9270734/ssh-permissions-are-too-open-error) To make use of the dummy ssh key pairs generated in this repository, change the ownership to `$USER`:
+
+```console
+user@local:~/SCM$ sudo chown -R $USER .ssh
+user@local:~/SCM$
+```
+
 * Test that you can ssh in:
 
 ```console
