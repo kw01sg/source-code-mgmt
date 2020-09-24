@@ -96,7 +96,8 @@ john
 
   ```console
   root@remoteserver:~$ /etc/init.d/ssh reload
-   * Reloading OpenBSD Secure Shell server's configuration sshd                                                                                                   [ OK ]
+   * Reloading OpenBSD Secure Shell server's configuration sshd
+   [ OK ]
   ```
 
   * Verify that password authentication (and root login) is disabled
