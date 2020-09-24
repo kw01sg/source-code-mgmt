@@ -75,6 +75,45 @@ john
   john@remoteserver:~$
   ```
 
+* (Optional) Increase security
+  * [Reference](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/)
+  * Update `/etc/ssh/sshd_config`
+
+  ```console
+  root@remoteserver:~$ vim /etc/ssh/sshd_config
+  ```
+
+  * Set the following parameters (Not sure about `UsePAM`)
+
+  ```text
+  ChallengeResponseAuthentication no
+  PasswordAuthentication no
+  UsePAM no
+  PermitRootLogin no
+  ```
+
+  * Reload or restart the ssh server. Reloading is recommended when using the docker container, as restarting will kill the container.
+
+  ```console
+  root@remoteserver:~$ /etc/init.d/ssh reload
+   * Reloading OpenBSD Secure Shell server's configuration sshd                                                                                                   [ OK ]
+  ```
+
+  * Verify that password authentication (and root login) is disabled
+
+  ```console
+  user@local:~/SCM$ ssh root@localhost -p 8000
+  root@localhost: Permission denied (publickey).
+
+  user@local:~/SCM$ ssh john@localhost -p 8000
+  john@localhost: Permission denied (publickey).
+
+  user@local:~/SCM$ ssh john@localhost -p 8000 -i .ssh/id_john    # ssh with private key
+  john@remoteserver:~$
+  john@remoteserver:~$ whoami
+  john
+  ```
+
 ### Giving SSH Access
 
 [Few ways](https://git-scm.com/book/en/v2/Git-on-the-Server-Getting-Git-on-a-Server) to give SSH access to members in a team:
